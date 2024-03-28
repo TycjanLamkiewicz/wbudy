@@ -1,0 +1,4 @@
+main.c:36:13:intToString	8	static
+main.c:93:17:getTicks	0	static
+main.c:89:6:SysTick_Handler	0	static
+main.c:99:5:main	56	static
