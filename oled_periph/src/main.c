@@ -18,6 +18,7 @@
 #include "gpio.h"
 #include "ssp.h"
 #include "adc.h"
+#include <stdbool.h>
 
 #include "light.h"
 #include "oled.h"
@@ -93,27 +94,6 @@ static uint32_t getTicks(void)
     return msTicks;
 }
 
-static void playNote(uint32_t note, uint32_t durationMs) {
-
-    uint32_t t = 0;
-
-    if (note > 0) {
-
-        while (t < (durationMs*1000)) {
-            P1_2_HIGH();
-            delay32Us(0, note / 2);
-
-            P1_2_LOW();
-            delay32Us(0, note / 2);
-
-            t += note;
-        }
-
-    }
-    else {
-        delay32Ms(0, durationMs);
-    }
-}
 
 int main (void)
 {
@@ -165,16 +145,25 @@ int main (void)
 
     oled_clearScreen(OLED_COLOR_WHITE);
 
-    oled_putString(1,1,  (uint8_t*)"Temp   : ", OLED_COLOR_BLACK, OLED_COLOR_WHITE);
     oled_putString(1,9,  (uint8_t*)"Light  : ", OLED_COLOR_BLACK, OLED_COLOR_WHITE);
     oled_putString(1,17, (uint8_t*)"Trimpot: ", OLED_COLOR_BLACK, OLED_COLOR_WHITE);
 
 
+    bool temp_type = false;
 
     while(1) {
 
         /* Temperature */
-        t = temp_read()/10;
+    	if (temp_type == false) {
+    		oled_putString(1,1,  (uint8_t*)"Temp C : ", OLED_COLOR_BLACK, OLED_COLOR_WHITE);
+    		t = temp_read()/10;
+
+    	}
+    	else {
+    		oled_putString(1,1,  (uint8_t*)"Temp F : ", OLED_COLOR_BLACK, OLED_COLOR_WHITE);
+    		t = ((temp_read() * 1.8) + 32)/10;
+    	}
+
 
         /* light */
         lux = light_read();
@@ -211,7 +200,7 @@ int main (void)
                 }
 
                 if ((joy & JOYSTICK_DOWN) != 0) {
-                	playNote(2272, 1000);
+
                 	oled_putString(1,55, (uint8_t*)"dol", OLED_COLOR_BLACK, OLED_COLOR_WHITE);
                 }
 
@@ -220,11 +209,11 @@ int main (void)
                 }
 
                 if ((joy & JOYSTICK_LEFT) != 0) {
-                	oled_putString(1,55, (uint8_t*)"lew", OLED_COLOR_BLACK, OLED_COLOR_WHITE);
+                	temp_type = false;
                 }
 
                 if ((joy & JOYSTICK_RIGHT) != 0) {
-                	oled_putString(1,55, (uint8_t*)"pra", OLED_COLOR_BLACK, OLED_COLOR_WHITE);
+                	temp_type = true;
                 }
 
         /* delay */
